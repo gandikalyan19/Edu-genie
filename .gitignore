@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Test and coverage output
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.key
+
+# FastAPI / local runtime
+*.log
+logs/
+tmp/
+temp/
+
+# Local data, model caches, and generated assets
+data/*
+!data/.gitkeep
+models/
+*.sqlite
+*.sqlite3
+*.db
+
+# Frontend dependencies/build output
+node_modules/
+dist/
+build/
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+~$*
+
+# Local workspace metadata and requirement artifacts
+.agents/
+EduGenie .pdf
+EduGenie.docx
+git.txt
