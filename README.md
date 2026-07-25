@@ -53,9 +53,13 @@ Gemini when `transformers` is not installed, and finally to deterministic local
 text. Watch the `model_used` field to see which path served a response.
 
 `gemini-1.5-pro` has been retired by Google and now returns HTTP 404. Set
-`GEMINI_MODEL=gemini-flash-latest` instead. Some accounts also see HTTP 429 on
-`gemini-2.5-pro` and `gemini-2.0-flash`; when a provider call fails for any
-reason the application degrades to fallback text rather than returning an error.
+`GEMINI_MODEL=gemini-flash-lite-latest` instead.
+
+Free API keys are allowed zero requests against the Pro models, and only 20 per
+day against `gemini-flash-latest`. When a provider call fails for any reason,
+including an exhausted allowance, the application returns local fallback text
+rather than an error, so check `model_used` to confirm the provider is genuinely
+serving requests. See `docs/project/MODEL_MIGRATION.md` for the full comparison.
 
 ## Screenshots
 

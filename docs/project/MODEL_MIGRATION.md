@@ -30,20 +30,25 @@ identified by inspecting the `model_used` value on stored responses.
 | Model | Result |
 | --- | --- |
 | `gemini-1.5-pro` | 404 - retired |
-| `gemini-2.5-pro` | 429 - quota exceeded on this account tier |
-| `gemini-2.0-flash` | 429 - quota exceeded on this account tier |
-| `gemini-2.0-flash-lite` | 429 - quota exceeded on this account tier |
-| `gemini-pro-latest` | 429 - quota exceeded on this account tier |
+| `gemini-2.5-pro` | 429 - free tier request limit is 0 |
+| `gemini-2.0-flash` | 429 - free tier request limit is 0 |
+| `gemini-pro-latest` | 429 - free tier request limit is 0 |
+| `gemini-3-pro-preview` | 429 - free tier request limit is 0 |
 | `gemini-2.5-flash` | 404 - not available to new users |
-| **`gemini-flash-latest`** | **working** |
-| `gemini-flash-lite-latest` | working |
+| `gemini-flash-latest` | works, but only 20 requests per day |
+| **`gemini-flash-lite-latest`** | **working, adequate daily allowance** |
 
 ## Resolution
 
-`GEMINI_MODEL` is set to `gemini-flash-latest`. All five educational features
-were re-verified against the running application and confirmed to return
-provider-generated output, with `model_used` recorded as `gemini-flash-latest`
-on each stored response.
+`GEMINI_MODEL` is set to `gemini-flash-lite-latest`. All five educational
+features were verified against the running application and confirmed to return
+provider-generated output, with `model_used` recorded on each stored response.
+
+`gemini-flash-latest` was used initially and does work, but it resolves to
+gemini-3.6-flash, whose free tier allows 20 requests per day. That allowance is
+consumed quickly during development and testing, after which every feature
+quietly reverts to fallback text. The lite model was selected for a usable
+development allowance rather than for output quality.
 
 ## Impact on the Codebase
 
