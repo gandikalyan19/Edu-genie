@@ -22,11 +22,40 @@ class AiFeatureTests(unittest.TestCase):
         self.assertGreater(len(answer), 40)
 
     def test_explanation_returns_beginner_friendly_text(self):
-        with patch("backend.app.ai_modules.features.explanation_module._generate_with_lamini", return_value=None):
+        with (
+            patch("backend.app.ai_modules.features.explanation_module._generate_with_lamini", return_value=None),
+            patch("backend.app.ai_modules.features.explanation_module.generate_with_gemini", return_value=None),
+        ):
             explanation = explain_concept("Pythagoras theorem")
 
         self.assertIn("Pythagoras theorem", explanation)
         self.assertIn("beginner", explanation)
+
+    def test_explanation_uses_gemini_when_local_model_unavailable(self):
+        with (
+            patch("backend.app.ai_modules.features.explanation_module._generate_with_lamini", return_value=None),
+            patch(
+                "backend.app.ai_modules.features.explanation_module.generate_with_gemini",
+                return_value="A right triangle relates its three sides.",
+            ) as gemini,
+        ):
+            explanation = explain_concept("Pythagoras theorem")
+
+        self.assertEqual(explanation, "A right triangle relates its three sides.")
+        gemini.assert_called_once()
+
+    def test_explanation_prefers_local_model_over_gemini(self):
+        with (
+            patch(
+                "backend.app.ai_modules.features.explanation_module._generate_with_lamini",
+                return_value="Local model explanation.",
+            ),
+            patch("backend.app.ai_modules.features.explanation_module.generate_with_gemini") as gemini,
+        ):
+            explanation = explain_concept("Pythagoras theorem")
+
+        self.assertEqual(explanation, "Local model explanation.")
+        gemini.assert_not_called()
 
     def test_summary_keeps_first_and_last_ideas(self):
         text = (
