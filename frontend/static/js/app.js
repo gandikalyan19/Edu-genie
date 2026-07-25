@@ -14,6 +14,163 @@
     return node;
   }
 
+  // Models reply in Markdown with occasional LaTeX. The helpers below turn the
+  // common subset into real elements. Every piece of model output is written
+  // through textContent, so nothing it returns can become markup.
+
+  var MATH_SYMBOLS = [
+    [/\^\\circ/g, "°"],
+    [/\\circ/g, "°"],
+    [/\\times/g, "×"],
+    [/\\div/g, "÷"],
+    [/\\pm/g, "±"],
+    [/\\cdot/g, "·"],
+    [/\\leq\b/g, "≤"],
+    [/\\geq\b/g, "≥"],
+    [/\\neq\b/g, "≠"],
+    [/\^2\b/g, "²"],
+    [/\^3\b/g, "³"]
+  ];
+
+  function tidyMath(text) {
+    // Unwrap $...$ only when the content looks like maths, so prices survive.
+    var out = String(text == null ? "" : text).replace(/\$([^$\n]+)\$/g, function (match, inner) {
+      return /[\\^_{}]/.test(inner) ? inner : match;
+    });
+    MATH_SYMBOLS.forEach(function (rule) {
+      out = out.replace(rule[0], rule[1]);
+    });
+    return out;
+  }
+
+  var INLINE = /\*\*([\s\S]+?)\*\*|`([^`\n]+?)`|\*(\S[^*\n]*?)\*/g;
+
+  function appendInline(parent, text) {
+    var last = 0;
+    var match;
+    INLINE.lastIndex = 0;
+    while ((match = INLINE.exec(text)) !== null) {
+      if (match.index > last) {
+        parent.appendChild(document.createTextNode(text.slice(last, match.index)));
+      }
+      var el;
+      if (match[1] !== undefined) {
+        el = document.createElement("strong");
+        el.textContent = match[1];
+      } else if (match[2] !== undefined) {
+        el = document.createElement("code");
+        el.textContent = match[2];
+      } else {
+        el = document.createElement("em");
+        el.textContent = match[3];
+      }
+      parent.appendChild(el);
+      last = INLINE.lastIndex;
+    }
+    if (last < text.length) {
+      parent.appendChild(document.createTextNode(text.slice(last)));
+    }
+  }
+
+  var RULE = /^(-{3,}|\*{3,}|_{3,})$/;
+  var HEADING = /^(#{1,6})\s+(.*)$/;
+  var QUOTE = /^>\s?(.*)$/;
+  var BULLET = /^[-*+]\s+(.*)$/;
+  var NUMBERED = /^(\d+)[.)]\s+(.*)$/;
+
+  function startsBlock(line) {
+    return !line || RULE.test(line) || HEADING.test(line) || QUOTE.test(line) ||
+      BULLET.test(line) || NUMBERED.test(line);
+  }
+
+  function renderMarkdown(container, raw) {
+    var lines = tidyMath(raw).split(/\r?\n/);
+    var index = 0;
+    var list = null;
+
+    function closeList() {
+      if (list) {
+        container.appendChild(list);
+        list = null;
+      }
+    }
+
+    while (index < lines.length) {
+      var line = lines[index].trim();
+
+      if (!line) {
+        closeList();
+        index += 1;
+        continue;
+      }
+
+      if (RULE.test(line)) {
+        closeList();
+        container.appendChild(document.createElement("hr"));
+        index += 1;
+        continue;
+      }
+
+      var heading = HEADING.exec(line);
+      if (heading) {
+        closeList();
+        // Offset by two: the page already owns h1 and h2.
+        var title = document.createElement("h" + Math.min(heading[1].length + 2, 6));
+        appendInline(title, heading[2]);
+        container.appendChild(title);
+        index += 1;
+        continue;
+      }
+
+      var quote = QUOTE.exec(line);
+      if (quote) {
+        closeList();
+        var block = document.createElement("blockquote");
+        appendInline(block, quote[1]);
+        container.appendChild(block);
+        index += 1;
+        continue;
+      }
+
+      var bullet = BULLET.exec(line);
+      var numbered = NUMBERED.exec(line);
+      if (bullet || numbered) {
+        var wanted = bullet ? "ul" : "ol";
+        if (!list || list.nodeName.toLowerCase() !== wanted) {
+          closeList();
+          list = document.createElement(wanted);
+        }
+        var item = document.createElement("li");
+        appendInline(item, bullet ? bullet[1] : numbered[2]);
+        list.appendChild(item);
+        index += 1;
+        continue;
+      }
+
+      closeList();
+      var paragraph = [];
+      while (index < lines.length && !startsBlock(lines[index].trim())) {
+        paragraph.push(lines[index].trim());
+        index += 1;
+      }
+      var text = document.createElement("p");
+      appendInline(text, paragraph.join(" "));
+      container.appendChild(text);
+    }
+
+    closeList();
+  }
+
+  function setMarkdown(node, text) {
+    node.textContent = "";
+    node.classList.remove("is-error");
+    var body = document.createElement("div");
+    body.className = "markdown";
+    renderMarkdown(body, text);
+    node.appendChild(body);
+    return node;
+  }
+
   function addMeta(node, model) {
     if (!model) return;
     var meta = document.createElement("div");
@@ -85,7 +242,7 @@
 
   function renderText(field) {
     return function (node, data) {
-      setResult(node, data[field], false);
+      setMarkdown(node, data[field]);
       addMeta(node, data.model_used);
     };
   }
@@ -99,7 +256,8 @@
       block.className = "quiz-item";
 
       var question = document.createElement("p");
-      question.textContent = index + 1 + ". " + item.question;
+      question.appendChild(document.createTextNode(index + 1 + ". "));
+      appendInline(question, tidyMath(item.question));
       block.appendChild(question);
 
       var feedback = document.createElement("div");
@@ -109,6 +267,8 @@
         var choice = document.createElement("button");
         choice.type = "button";
         choice.className = "option";
+        // Kept as plain text: the correction below matches an option's
+        // textContent against correct_answer, which formatting would break.
         choice.textContent = option;
         choice.addEventListener("click", function () {
           var correct = option === item.correct_answer;
