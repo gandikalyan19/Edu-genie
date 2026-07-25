@@ -1,0 +1,17 @@
+fastapi>=0.110
+uvicorn[standard]>=0.27
+jinja2>=3.1
+sqlalchemy>=2.0
+pydantic>=2.6
+pydantic-settings>=2.2
+python-multipart>=0.0.9
+httpx>=0.27
+
+# Gemini provider. Required for real AI responses; without it every feature
+# silently serves local fallback text.
+google-generativeai>=0.5
+
+# Optional local explanation model. Large download, CPU-friendly but slow.
+# Without these the explanation feature falls back to Gemini.
+# transformers>=4.40
+# torch>=2.2

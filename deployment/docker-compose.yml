@@ -1,0 +1,17 @@
+services:
+  edugenie:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-pro}
+      EDUGENIE_USE_LOCAL_MODEL: ${EDUGENIE_USE_LOCAL_MODEL:-0}
+      DATABASE_URL: sqlite:////app/data/edugenie.db
+    volumes:
+      - edugenie-data:/app/data
+
+volumes:
+  edugenie-data:
