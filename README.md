@@ -57,6 +57,19 @@ text. Watch the `model_used` field to see which path served a response.
 `gemini-2.5-pro` and `gemini-2.0-flash`; when a provider call fails for any
 reason the application degrades to fallback text rather than returning an error.
 
+## Screenshots
+
+Functional walkthrough of each feature in the running application:
+
+| Feature | Screenshot |
+| --- | --- |
+| Question answering | [ask_question.png](docs/screenshots/ask_question.png) |
+| Concept explanation | [explain_concept.png](docs/screenshots/explain_concept.png) |
+| Quiz generation | [generate_quiz.png](docs/screenshots/generate_quiz.png) |
+| Text summarization | [summarize.png](docs/screenshots/summarize.png) |
+| Learning recommendations | [learning_path.png](docs/screenshots/learning_path.png) |
+| Stored activity and model used | [history.png](docs/screenshots/history.png) |
+
 ## Project Structure
 
 ```text
