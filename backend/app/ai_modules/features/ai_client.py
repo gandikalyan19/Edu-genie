@@ -11,6 +11,8 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 
+from .provenance import record_model
+
 
 @dataclass(frozen=True)
 class GeminiConfig:
@@ -46,6 +48,7 @@ def generate_with_gemini(prompt: str, config: GeminiConfig | None = None) -> str
 
     text = getattr(response, "text", None)
     if isinstance(text, str) and text.strip():
+        record_model(config.model_name)
         return text.strip()
 
     return None

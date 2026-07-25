@@ -1,10 +1,18 @@
-"""Concept explanation module using LaMini-Flan-T5 when available."""
+"""Concept explanation module.
+
+LaMini-Flan-T5 is the preferred model because it runs locally and cheaply. When
+it is unavailable - the transformers dependency is optional, and the model is a
+large download - the module falls back to Gemini, and finally to deterministic
+local text so the endpoint always answers.
+"""
 
 from __future__ import annotations
 
 import os
 from functools import lru_cache
 
+from .ai_client import generate_with_gemini
+from .provenance import record_model
 from .text_utils import keywords, require_text
 
 
@@ -25,6 +33,10 @@ def explain_concept(topic: str, audience: str = "beginner") -> str:
     if local_answer:
         return local_answer
 
+    ai_answer = generate_with_gemini(prompt)
+    if ai_answer:
+        return ai_answer
+
     return _fallback_explanation(topic, audience)
 
 
@@ -41,6 +53,7 @@ def _generate_with_lamini(prompt: str) -> str | None:
     if isinstance(output, list) and output:
         text = output[0].get("generated_text")
         if isinstance(text, str) and text.strip():
+            record_model(os.getenv("LAMINI_MODEL", DEFAULT_MODEL))
             return text.strip()
     return None
 
