@@ -70,9 +70,17 @@ Functional walkthrough of each feature in the running application:
 | Question answering | [ask_question.png](docs/screenshots/ask_question.png) |
 | Concept explanation | [explain_concept.png](docs/screenshots/explain_concept.png) |
 | Quiz generation | [generate_quiz.png](docs/screenshots/generate_quiz.png) |
+| Quiz answer checking | [quiz_answer_check.png](docs/screenshots/quiz_answer_check.png) |
 | Text summarization | [summarize.png](docs/screenshots/summarize.png) |
 | Learning recommendations | [learning_path.png](docs/screenshots/learning_path.png) |
 | Stored activity and model used | [history.png](docs/screenshots/history.png) |
+
+Application startup and the generated API documentation:
+
+| View | Screenshot |
+| --- | --- |
+| Uvicorn running locally | [run_locally.png](docs/screenshots/run_locally.png) |
+| Swagger UI at `/docs` | [api_docs.png](docs/screenshots/api_docs.png) |
 
 ## Project Structure
 
